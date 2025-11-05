@@ -20,19 +20,26 @@ def obtener_valores(mano):
     return [carta[:-1] for carta in mano]
 
 def evaluar_mano(mano):
+    # Cuenta repeticiones por valor y evalúa por presencia
     valores = obtener_valores(mano)
     conteo = Counter(valores)
-    repeticiones = sorted(conteo.values(), reverse=True)
+    repeticiones = list(conteo.values())
 
-    if repeticiones == [4, 1]:
+    tiene_par = 2 in repeticiones
+    cantidad_pares = repeticiones.count(2)
+    tiene_trio = 3 in repeticiones
+    tiene_poker = 4 in repeticiones
+
+    # Orden de prioridad: Póker > Full House > Trío > Doble Par > Par > Carta Alta
+    if tiene_poker:
         return "Póker"
-    elif repeticiones == [3, 2]:
+    elif tiene_trio and tiene_par:
         return "Full House"
-    elif repeticiones == [3, 1, 1]:
+    elif tiene_trio:
         return "Trío"
-    elif repeticiones == [2, 2, 1]:
+    elif cantidad_pares >= 2:
         return "Doble Par"
-    elif repeticiones == [2, 1, 1, 1]:
+    elif tiene_par:
         return "Par"
     else:
         return "Carta Alta"
