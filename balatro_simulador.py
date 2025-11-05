@@ -37,7 +37,7 @@ def evaluar_mano(mano):
     else:
         return "Carta Alta"
 
-def simular_manos(baraja, repeticiones):
+def simular_manos(baraja, repeticiones, cantidad_cartas=5):
     resultados = {
         "Póker": 0,
         "Full House": 0,
@@ -49,19 +49,17 @@ def simular_manos(baraja, repeticiones):
     manos_guardadas = []
 
     for _ in range(repeticiones):
-        mano = generar_mano(baraja)
+        mano = generar_mano(baraja, cantidad=cantidad_cartas)
         tipo = evaluar_mano(mano)
         resultados[tipo] += 1
-        manos_guardadas.append(tuple(mano))  # tupla para poder contar
+        manos_guardadas.append(tuple(mano))
 
-    # Mano más habitual
     conteo_manos = Counter(manos_guardadas)
-    mano_mas_habitual = conteo_manos.most_common(1)[0][0]  # tupla de 5 cartas
+    mano_mas_habitual = conteo_manos.most_common(1)[0][0]
 
     return resultados, mano_mas_habitual
 
 def formatear_mano(mano_tupla):
-    # Convierte ('K♣','7♦','A♥','3♠','10♣') en "K♣ 7♦ A♥ 3♠ 10♣"
     return " ".join(mano_tupla)
 
 # -----------------------------
@@ -73,35 +71,34 @@ st.title("Simulación Monte Carlo de manos tipo Balatro")
 st.write("Generá miles de manos aleatorias, estimá probabilidades y visualizá la mano más habitual.")
 
 # Controles
-col1, col2 = st.columns(2)
-with col1:
-    repeticiones = st.slider("Cantidad de simulaciones", min_value=100, max_value=20000, step=100, value=2000)
-with col2:
-    st.write("")
+repeticiones = st.slider("Cantidad de simulaciones", min_value=100, max_value=20000, step=100, value=2000)
 
 # Ejecutar
 if st.button("Ejecutar simulación"):
-    resultados, mano_mas_habitual = simular_manos(baraja, repeticiones)
+    # Simulación estándar (5 cartas)
+    resultados_5, mano_mas_habitual_5 = simular_manos(baraja, repeticiones, cantidad_cartas=5)
 
-    # Probabilidades
-    tipos = list(resultados.keys())
-    cantidades = list(resultados.values())
-    porcentajes = [c / repeticiones * 100 for c in cantidades]
+    # Simulación Balatro PC (8 cartas)
+    resultados_8, mano_mas_habitual_8 = simular_manos(baraja, repeticiones, cantidad_cartas=8)
 
-    st.subheader("Resultados")
-    for tipo, cantidad, porcentaje in zip(tipos, cantidades, porcentajes):
+    # Probabilidades 5 cartas
+    st.subheader("Resultados (5 cartas)")
+    tipos_5 = list(resultados_5.keys())
+    cantidades_5 = list(resultados_5.values())
+    porcentajes_5 = [c / repeticiones * 100 for c in cantidades_5]
+    for tipo, cantidad, porcentaje in zip(tipos_5, cantidades_5, porcentajes_5):
         st.write(f"- {tipo}: {cantidad} veces ({porcentaje:.2f}%)")
 
-    # Gráfico
-    fig, ax = plt.subplots()
-    ax.bar(tipos, porcentajes, color='#5DADE2')
-    ax.set_title("Probabilidad estimada por tipo de mano")
-    ax.set_ylabel("Probabilidad (%)")
-    ax.grid(axis='y', linestyle='--', alpha=0.5)
-    st.pyplot(fig)
+    # Gráfico 5 cartas
+    fig5, ax5 = plt.subplots()
+    ax5.bar(tipos_5, porcentajes_5, color='#5DADE2')
+    ax5.set_title("Probabilidad estimada por tipo de mano (5 cartas)")
+    ax5.set_ylabel("Probabilidad (%)")
+    ax5.grid(axis='y', linestyle='--', alpha=0.5)
+    st.pyplot(fig5)
 
-    # Mano más habitual (visual)
-    st.subheader("Mano más habitual")
+    # Mano más habitual (5 cartas)
+    st.subheader("Mano más habitual (5 cartas)")
     st.markdown(
         f"""
         <div style="
@@ -113,12 +110,45 @@ if st.button("Ejecutar simulación"):
             text-align: center;
         ">
             <strong>Mano más habitual:</strong><br>
-            {formatear_mano(mano_mas_habitual)}
+            {formatear_mano(mano_mas_habitual_5)}
         </div>
         """,
         unsafe_allow_html=True
     )
 
+    # Probabilidades 8 cartas (Balatro PC)
+    st.subheader("Resultados (Balatro PC - 8 cartas)")
+    tipos_8 = list(resultados_8.keys())
+    cantidades_8 = list(resultados_8.values())
+    porcentajes_8 = [c / repeticiones * 100 for c in cantidades_8]
+    for tipo, cantidad, porcentaje in zip(tipos_8, cantidades_8, porcentajes_8):
+        st.write(f"- {tipo}: {cantidad} veces ({porcentaje:.2f}%)")
+
+    # Gráfico 8 cartas
+    fig8, ax8 = plt.subplots()
+    ax8.bar(tipos_8, porcentajes_8, color='#F5B041')
+    ax8.set_title("Probabilidad estimada por tipo de mano (Balatro PC - 8 cartas)")
+    ax8.set_ylabel("Probabilidad (%)")
+    ax8.grid(axis='y', linestyle='--', alpha=0.5)
+    st.pyplot(fig8)
+
+    # Mano más habitual (Balatro PC - 8 cartas)
+    st.subheader("Mano más habitual (Balatro PC - 8 cartas)")
+    st.markdown(
+        f"""
+        <div style="
+            border: 2px solid #F39C12;
+            border-radius: 10px;
+            padding: 12px;
+            background-color: #FEF5E7;
+            font-size: 22px;
+            text-align: center;
+        ">
+            <strong>Mano más habitual (Balatro PC):</strong><br>
+            {formatear_mano(mano_mas_habitual_8)}
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
 else:
     st.info("Ajustá la cantidad de simulaciones y presioná el botón para ver resultados.")
-
