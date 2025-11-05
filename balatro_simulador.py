@@ -20,7 +20,6 @@ def obtener_valores(mano):
     return [carta[:-1] for carta in mano]
 
 def evaluar_mano(mano):
-    # Cuenta repeticiones por valor y evalúa por presencia
     valores = obtener_valores(mano)
     conteo = Counter(valores)
     repeticiones = list(conteo.values())
@@ -30,7 +29,6 @@ def evaluar_mano(mano):
     tiene_trio = 3 in repeticiones
     tiene_poker = 4 in repeticiones
 
-    # Orden de prioridad: Póker > Full House > Trío > Doble Par > Par > Carta Alta
     if tiene_poker:
         return "Póker"
     elif tiene_trio and tiene_par:
@@ -66,8 +64,20 @@ def simular_manos(baraja, repeticiones, cantidad_cartas=5):
 
     return resultados, mano_mas_habitual
 
-def formatear_mano(mano_tupla):
-    return " ".join(mano_tupla)
+# -----------------------------
+# Función para colorear cartas según palo
+# -----------------------------
+def colorear_mano_por_palo(mano):
+    salida = []
+    for carta in mano:
+        palo = carta[-1]  # último carácter es el palo
+        if palo in ['♠', '♣']:
+            salida.append(f"<span style='color:black'>{carta}</span>")
+        elif palo in ['♦', '♥']:
+            salida.append(f"<span style='color:red'>{carta}</span>")
+        else:
+            salida.append(carta)
+    return " ".join(salida)
 
 # -----------------------------
 # Interfaz Streamlit
@@ -75,7 +85,7 @@ def formatear_mano(mano_tupla):
 st.set_page_config(page_title="Simulación Monte Carlo Balatro", page_icon="🃏", layout="centered")
 
 st.title("Simulación Monte Carlo de manos tipo Balatro")
-st.write("Generá miles de manos aleatorias, estimá probabilidades y visualizá la mano más habitual.")
+st.write("Generá miles de manos aleatorias, estimá probabilidades y visualizá la mano más habitual con colores reales de los palos.")
 
 # Controles
 repeticiones = st.slider("Cantidad de simulaciones", min_value=100, max_value=20000, step=100, value=2000)
@@ -117,7 +127,7 @@ if st.button("Ejecutar simulación"):
             text-align: center;
         ">
             <strong>Mano más habitual:</strong><br>
-            {formatear_mano(mano_mas_habitual_5)}
+            {colorear_mano_por_palo(mano_mas_habitual_5)}
         </div>
         """,
         unsafe_allow_html=True
@@ -152,7 +162,7 @@ if st.button("Ejecutar simulación"):
             text-align: center;
         ">
             <strong>Mano más habitual (Balatro PC):</strong><br>
-            {formatear_mano(mano_mas_habitual_8)}
+            {colorear_mano_por_palo(mano_mas_habitual_8)}
         </div>
         """,
         unsafe_allow_html=True
